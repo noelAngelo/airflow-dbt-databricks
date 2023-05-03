@@ -14,7 +14,8 @@ To use these DAGs and plugins, you will need the following:
 
 - An Airflow instance running in the AWS Managed Workflows for Apache Airflow (MWAA) service.
 - A dbt project deployed on dbt Cloud.
-- A Databricks workspace.
+- A Databricks workspace in AWS.
+- A local copy of the [aws-mwaa-local-runner](https://github.com/aws/aws-mwaa-local-runner) repository to generate plugins
 
 
 ## Usage
