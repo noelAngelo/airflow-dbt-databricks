@@ -5,6 +5,9 @@ This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt
 ## To-do
 
 - Set up Amazon SES and configure SMTP in Airflow
+- Trigger dbt job in dbt Cloud
+- Trigger Databricks notebook in AWS
+- Send email
 
 ## Requirements
 To use these DAGs and plugins, you will need the following:
