@@ -324,3 +324,4 @@ Temporary Items
 .apdisk
 airflow/.DS_Store
 minio/ddloa-apse2-landing-adventure-works/*
+startup.sh
