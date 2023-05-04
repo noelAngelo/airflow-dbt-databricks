@@ -1,7 +1,5 @@
 import json
-from loguru import logger
 import pendulum
-
 from airflow.decorators import dag, task
 
 
@@ -30,7 +28,6 @@ def tutorial_taskflow_api():
         pipeline. In this case, getting data is simulated by reading from a
         hardcoded JSON string.
         """
-        logger.info('Welcome to Extract')
         data_string = '{"1001": 301.27, "1002": 433.21, "1003": 502.22}'
         order_data_dict = json.loads(data_string)
         return order_data_dict
@@ -42,7 +39,6 @@ def tutorial_taskflow_api():
         A simple Transform task which takes in the collection of order data and
         computes the total order value.
         """
-        logger.info('Welcome to Transform')
         total_order_value = 0
 
         for value in order_data_dict.values():
@@ -57,7 +53,6 @@ def tutorial_taskflow_api():
         A simple Load task which takes in the result of the Transform task and
         instead of saving it to end user review, just prints it out.
         """
-        logger.info('Welcome to Load')
         print(f"Total order value is: {total_order_value:.2f}")
 
     order_data = extract()

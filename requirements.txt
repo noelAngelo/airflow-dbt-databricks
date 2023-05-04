@@ -1,3 +1,5 @@
+apache-airflow-providers-databricks
+apache-airflow-providers-dbt-cloud
 loguru
 pendulum
-apache-airflow
+pandas
