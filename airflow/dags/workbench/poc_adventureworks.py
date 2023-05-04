@@ -10,7 +10,7 @@ from airflow.models.param import Param
 
 # Define connections
 DATABRICKS_CONN_ID = 'databricks_default'
-DBT_CONN_ID = 'dbt_default'
+DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
 
 # Define defaults
 default_args = {
@@ -77,6 +77,19 @@ def run_autoloader(**kwargs):
     db_job.execute(kwargs)
 
 
+# # dbt operators
+# run_bronze_to_silver_dbt = DbtCloudRunJobOperator(
+#     task_id='run_bronze_to_silver',
+#     job_id=bronze_silver_job_id,
+#     dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
+# )
+# run_silver_to_gold_dbt = DbtCloudRunJobOperator(
+#     task_id='run_silver_to_gold',
+#     job_id=silver_to_gold_id,
+#     dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
+# )
+
+
 # DAG definition
 @dag(
     default_args=default_args,
@@ -92,18 +105,6 @@ def poc_adventureworks():
     ### Adventureworks Pipeline Documentation
     Pipeline to run the jobs in dbt and Databricks for AdventureWorks
     """
-
-    # # dbt operators
-    # run_bronze_to_silver_dbt = DbtCloudRunJobOperator(
-    #     task_id='run_bronze_to_silver',
-    #     job_id=bronze_silver_job_id,
-    #     dbt_cloud_conn_id=DBT_CONN_ID
-    # )
-    # run_silver_to_gold_dbt = DbtCloudRunJobOperator(
-    #     task_id='run_silver_to_gold',
-    #     job_id=silver_to_gold_id,
-    #     dbt_cloud_conn_id=DBT_CONN_ID
-    # )
 
     # Dummy operators
     start_op = EmptyOperator(task_id='start_op')
