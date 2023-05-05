@@ -71,9 +71,9 @@ def run_autoloader(**kwargs):
     # Databricks operators
     db_job = DatabricksRunNowOperator(
         task_id='run_autoloader_task',
-        job_id=dag_run.conf["autoloader_job_id"],
+        job_id=dag_run.conf.get("autoloader_job_id", default=default_config['autoloader_job_id']),
         databricks_conn_id=DATABRICKS_CONN_ID,
-        notebook_params=dag_run.conf['notebook_params'])
+        notebook_params=dag_run.conf.get('notebook_params', default=default_config['notebook_params']))
     db_job.execute(kwargs)
 
 
