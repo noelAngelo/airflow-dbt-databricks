@@ -7,10 +7,13 @@ This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt
 ##  Table of Contents
 1. [To-do](#to-do)
 2. [Requirements](#requirements)
-   3. [Databricks](#databricks)
-   4. [dbt](#dbt)
+    - [Databricks](#databricks)
+    -  [dbt](#dbt)
 3. [Usage](#usage)
 4. [Challenges](#challenges)
+    - [elementary CLI](#elementary-data)
+5. [Potential Mitigations](#potential-mitigations)
+    - [GitHub Actions](#elementary-data-1)
 5. [Screenshots](#screenshots)
 6. [References](#references)
 
@@ -37,7 +40,7 @@ To use these DAGs and plugins, you will need the following:
 Once you have all the information above, fill in the details:
 - Create a `connections.yml` 
   - from the `connections.yml.sample` file
-    - `databricks``.`conn_type`: databricks
+    - `databricks`.`conn_type`: databricks
     - `databricks`.`host`: the host URL in databricks
     - `databricks`.`password`: the Personal Access token in databricks
     - `dbt`.`login`: the Account ID in dbt
