@@ -296,5 +296,5 @@ pyproject.toml
 connections.yml
 profiles.yml
 /artifacts/elementary/mdp-dbt-databricks/
-report.html
+#report.html
 .DS_Store
