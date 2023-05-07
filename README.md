@@ -40,6 +40,17 @@ To use these DAGs and plugins, you will need to:
 
 The DAGs included in this repository use HTTP requests to trigger dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be modified to fit your specific use case and can be extended to include additional tasks and dependencies.
 
+## Screenshots
+
+### Airflow
+![img-airflow](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-airflow.png)
+
+### Databricks
+![img-databricks](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-databricks.png)
+
+### Elementary
+![img-elementary](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-elementary.png)
+
 ## References
 - https://github.com/aws/aws-mwaa-local-runner
 - https://repost.aws/knowledge-center/mwaa-environment-install-libraries
