@@ -1,10 +1,13 @@
 # Managed Data Pipeline Airflow
 
+![img-airflow](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-architecture.png)
+
 This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be used to automate your data pipeline and orchestrate your dbt and Databricks jobs.
 
 ## To-do
-- Trigger Databricks notebook in AWS
-- Trigger dbt job in dbt Cloud
+- ~~Trigger Databricks notebook in AWS~~
+- ~~Trigger dbt job in dbt Cloud~~
+- ~~Generate elementary data report~~
 - Send elementary data report file to S3
 - Set up Amazon SES and configure SMTP in Airflow
 - Send email
