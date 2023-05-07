@@ -4,6 +4,16 @@
 
 This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be used to automate your data pipeline and orchestrate your dbt and Databricks jobs.
 
+##  Table of Contents
+1. [To-do](#to-do)
+2. [Requirements](#requirements)
+   3. [Databricks](#databricks)
+   4. [dbt](#dbt)
+3. [Usage](#usage)
+4. [Challenges](#challenges)
+5. [Screenshots](#screenshots)
+6. [References](#references)
+
 ## To-do
 - ~~Trigger Databricks notebook in AWS~~
 - ~~Trigger dbt job in dbt Cloud~~
@@ -40,7 +50,6 @@ Once you have all the information above, fill in the details:
     - `elementary`.`host`: the host url in databricks (without https://)
     - `elementary`.`token`: the Personal Access Token in databricks
 
-
 ## Usage
 To use these DAGs and plugins, you will need to:
 
@@ -52,6 +61,22 @@ To use these DAGs and plugins, you will need to:
 4. Trigger the DAGs manually or configure them to run on a schedule.
 
 The DAGs included in this repository use HTTP requests to trigger dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be modified to fit your specific use case and can be extended to include additional tasks and dependencies.
+
+## Challenges
+
+### Elementary Data
+
+hoarding of ownership - repository contains both codebases from Airflow & dbt project. 
+
+- in the `managed_adventureworks` DAG, the process to trigger are as follows:
+  - install python dependencies 
+  - clone repository
+  - run `edr` using elementary CLI
+
+## Potential Mitigations
+
+### Elementary Data
+1. use GitHub Actions - a GitHub [Action](https://github.com/elementary-data/run-elementary-action) already exists that can be used to trigger elementary CLI 
 
 ## Screenshots
 
