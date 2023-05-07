@@ -2,7 +2,10 @@
 
 ![img-airflow](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-architecture.png)
 
-This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be used to automate your data pipeline and orchestrate your dbt and Databricks jobs.
+The repository hosts Airflow DAGs and plugins that enable the triggering of dbt jobs in both dbt Cloud and Databricks. 
+These DAGs facilitate the automation of the _adventureworks_ data pipeline and orchestration of the dbt and Databricks jobs under the `ddloa` asset.
+Currently, the PoC employs a shared model in which Airflow and dbt have joint ownership of the dbt project. See more under
+[Ownership](#ownership).
 
 ##  Table of Contents
 1. [To-do](#to-do)
@@ -14,8 +17,8 @@ This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt
     - [elementary CLI](#elementary-data)
 5. [Potential Mitigations](#potential-mitigations)
     - [GitHub Actions](#elementary-data-1)
-5. [Screenshots](#screenshots)
-6. [References](#references)
+6. [Screenshots](#screenshots)
+7. [References](#references)
 
 ## To-do
 - ~~Trigger Databricks notebook in AWS~~
@@ -69,17 +72,37 @@ The DAGs included in this repository use HTTP requests to trigger dbt jobs in db
 
 ### Elementary Data
 
-hoarding of ownership - repository contains both codebases from Airflow & dbt project. 
-
-- in the `managed_adventureworks` DAG, the process to trigger are as follows:
+hoarding of ownership - repository contains both codebases from Airflow & dbt project. in both `managed_adventureworks` 
+and `poc_adventureworks` DAG, the process to trigger elementary CLI are as follows:
   - install python dependencies 
   - clone repository
   - run `edr` using elementary CLI
+
+it was done this way because:
+  - to generate the report, we can only use elementary CLI (elementary Cloud is in _beta_ and is _invite-only_)
+  - elementary CLI is dependent on having the dbt project stored locally
+
+this poses challenges because of the following:
+- Code duplication: both repositories have a copy of the dbt project, it can lead to code duplication and maintenance overhead. This only becomes an issue if a user updates the wrong repository - makes code changes in the _mdp-airflow_ repository instead of the _mdp-dbt-databricks_ repository
+- Inconsistent Results: If the dbt project is used in both repositories but evolves independently, it may lead to inconsistent results. The dbt transformations performed in the airflow DAG may not align with the transformations performed in the dbt project if they are out of sync. This can lead to data inconsistencies and incorrect analysis.
+- Dependency Management: If the airflow DAG depends on specific versions of the dbt project, managing these dependencies can become challenging. Updating the dbt project in one repository might require changes in the airflow DAG to accommodate the new version. This can introduce compatibility issues and potentially break the DAG execution.
 
 ## Potential Mitigations
 
 ### Elementary Data
 1. use GitHub Actions - a GitHub [Action](https://github.com/elementary-data/run-elementary-action) already exists that can be used to trigger elementary CLI 
+2. migrate dbt project / airflow repo - it would be better to have a single repository where both the airflow DAG files and the dbt project are stored. This approach ensures better code organization, easier synchronization, consistent results, and simplified dependency management (standard PoC)
+3. store the dbt project as docker images - might be worth using an ECR to store the different versions of the dbt project and use Docker to run the pipeline instead of just the BashOperator. this also locks the changes that can be made to the dbt project hosted in the `mdp-airflow` repository
+
+## Ownership
+
+### Shared Model
+
+Currently, the repository uses a shared model of ownership between Airflow and dbt
+
+### Independent Model
+
+lorem ipsum 
 
 ## Screenshots
 
