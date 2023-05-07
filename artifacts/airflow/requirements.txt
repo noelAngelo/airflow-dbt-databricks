@@ -4,3 +4,4 @@ loguru
 pendulum
 pandas
 psycopg2-binary
+elementary-data[databricks]

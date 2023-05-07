@@ -293,4 +293,8 @@ pip-selfcheck.json
 
 poetry.lock
 pyproject.toml
-artifacts/airflow/connections.yml
+connections.yml
+profiles.yml
+/artifacts/elementary/mdp-dbt-databricks/
+report.html
+.DS_Store

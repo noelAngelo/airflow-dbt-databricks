@@ -1,0 +1,22 @@
+adventureworksLH:
+  target: ddloa-asset
+  outputs:
+    ddloa-asset:
+      type: databricks
+      catalog: insert-text-here
+      schema: insert-text-here
+      http_path: insert-text-here
+      host: insert-text-here
+      token: insert-text-here
+      threads: 1
+
+elementary:
+  outputs:
+    default:
+      type: databricks
+      catalog: insert-text-here
+      schema: insert-text-here
+      http_path: insert-text-here
+      host: insert-text-here
+      token: insert-text-here
+      threads: 1

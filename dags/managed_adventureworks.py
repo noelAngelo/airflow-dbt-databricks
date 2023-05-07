@@ -1,6 +1,7 @@
 import pendulum
 from datetime import timedelta
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.bash import BashOperator
 from airflow.decorators import dag, task
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
@@ -38,8 +39,8 @@ dag_params = {
 
     "dbt_job_id": Param(
         default=default_config['dbt_job_id'],
-        type="int",
-        description="The Job ID of Bronze to Silver in dbt"
+        type="integer",
+        description="The Job ID in elementary"
     ),
 
     "notebook_params": Param(
@@ -52,6 +53,12 @@ dag_params = {
         },
         type="object"
     )
+}
+default_elementary = {
+    'image': 'ghcr.io/elementary-data/elementary:latest',
+    'commands': {
+        'monitor': 'edr report --file-path /opt/airflow/reports/reports.html'
+    }
 }
 
 
@@ -75,7 +82,7 @@ def run_dbt(**kwargs):
     ti: TaskInstance = kwargs["ti"]
     dag_run: DagRun = ti.dag_run
 
-    # dbt operators
+    # dbt cloud operator
     dbt_job = DbtCloudRunJobOperator(
         task_id='run_dbt_task',
         job_id=dag_run.conf.get("dbt_job_id", default=default_config['dbt_job_id']),
@@ -94,23 +101,30 @@ def run_dbt(**kwargs):
     schedule=None,
     schedule_interval=None,
 )
-def hybrid_adventureworks():
+def managed_adventureworks():
     """
     ### Adventureworks Pipeline Documentation
-    Pipeline to run the jobs in dbt and Databricks for AdventureWorks
+    Pipeline to run the jobs in elementary and Databricks for AdventureWorks
     """
 
     # Dummy operators
     start_op = EmptyOperator(task_id='start_op')
     end_op = EmptyOperator(task_id='end_op')
 
+    # Bash operators
+    run_edr_report_task = BashOperator(
+        task_id='run_report_task',
+        cwd='/opt/airflow/artifacts/elementary/mdp-dbt-databricks',
+        bash_command='edr report --file-path /opt/airflow/artifacts/reports/report.html'
+    )
+
     # Tasks
     run_autoloader_task = run_autoloader()
     run_dbt_task = run_dbt()
 
     # Describe workflows
-    start_op >> run_autoloader_task >> run_dbt_task >> end_op
+    start_op >> run_autoloader_task >> run_dbt_task >> run_edr_report_task >> end_op
 
 
 # Run workflow
-hybrid_adventureworks()
+managed_adventureworks()

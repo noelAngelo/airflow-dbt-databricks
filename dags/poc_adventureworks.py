@@ -44,13 +44,13 @@ dag_params = {
     "bronze_silver_job_id": Param(
         default=default_config['bronze_silver_job_id'],
         type="string",
-        description="The Job ID of Bronze to Silver in dbt"
+        description="The Job ID of Bronze to Silver in elementary"
     ),
 
     "silver_to_gold_id": Param(
         default=default_config['silver_to_gold_id'],
         type="string",
-        description="The Job ID of Silver to Gold in dbt"
+        description="The Job ID of Silver to Gold in elementary"
     ),
 
     "notebook_params": Param(
@@ -99,6 +99,7 @@ def run_dbt():
     dbt_deps >> dbt_test >> dbt_run
     dbt_run >> edr_monitor
 
+
 # DAG definition
 @dag(
     default_args=default_args,
@@ -112,7 +113,7 @@ def run_dbt():
 def poc_adventureworks():
     """
     ### Adventureworks Pipeline Documentation
-    Pipeline to run the jobs in dbt and Databricks for AdventureWorks
+    Pipeline to run the jobs in elementary and Databricks for AdventureWorks
     """
 
     # Dummy operators
