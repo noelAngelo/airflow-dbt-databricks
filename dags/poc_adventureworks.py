@@ -6,10 +6,14 @@ from airflow.providers.databricks.operators.databricks import DatabricksRunNowOp
 from airflow.models.taskinstance import TaskInstance
 from airflow.models.dagrun import DagRun
 from airflow.models.param import Param
+from airflow.models import Variable
 
 # Define connections
 DATABRICKS_CONN_ID = 'databricks_default'
 DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
+
+# Define globals
+DBT_PROJECT_REPO_URL = Variable.get('DBT_PROJECT_REPO_URL')
 
 # Define defaults
 default_args = {
@@ -62,7 +66,7 @@ dag_params = {
 
 
 # Task definitions
-@task(task_id='run_autoloader')
+@task
 def run_autoloader(**kwargs):
     ti: TaskInstance = kwargs["ti"]
     dag_run: DagRun = ti.dag_run
@@ -76,10 +80,22 @@ def run_autoloader(**kwargs):
     db_job.execute(kwargs)
 
 
+# @task
+# def clone_repo(**kwargs):
+#     pass
+
+
 # Task Group definition
 @task_group
 def run_dbt():
-    pass
+    # TODO: Replace dummy operators
+    clone_repo = EmptyOperator(task_id='clone_repo')
+    dbt_deps = EmptyOperator(task_id='dbt_deps')
+    dbt_test = EmptyOperator(task_id='dbt_test')
+    dbt_run = EmptyOperator(task_id='dbt_run')
+    edr_monitor = EmptyOperator(task_id='edr_monitor')
+
+    clone_repo >> dbt_deps >> dbt_test >> dbt_run >> edr_monitor
 
 
 # DAG definition
@@ -104,9 +120,10 @@ def poc_adventureworks():
 
     # Tasks
     run_autoloader_task = run_autoloader()
+    run_dbt_task = run_dbt()
 
     # Describe workflows
-    start_op >> run_autoloader_task >> end_op
+    start_op >> run_autoloader_task >> run_dbt_task >> end_op
 
 
 # Run workflow
