@@ -14,6 +14,7 @@ DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
 
 # Define globals
 DBT_PROJECT_REPO_URL = Variable.get('DBT_PROJECT_REPO_URL')
+DBT_PROJECT_REPO_BRANCH = Variable.get('DBT_PROJECT_REPO_BRANCH')
 
 # Define defaults
 default_args = {
@@ -80,23 +81,23 @@ def run_autoloader(**kwargs):
     db_job.execute(kwargs)
 
 
-# @task
-# def clone_repo(**kwargs):
-#     pass
+@task
+def clone_repo(url: str, branch: str, **kwargs):
+    pass
 
 
 # Task Group definition
 @task_group
 def run_dbt():
     # TODO: Replace dummy operators
-    clone_repo = EmptyOperator(task_id='clone_repo')
     dbt_deps = EmptyOperator(task_id='dbt_deps')
     dbt_test = EmptyOperator(task_id='dbt_test')
     dbt_run = EmptyOperator(task_id='dbt_run')
     edr_monitor = EmptyOperator(task_id='edr_monitor')
 
-    clone_repo >> dbt_deps >> dbt_test >> dbt_run >> edr_monitor
-
+    clone_repo(url=DBT_PROJECT_REPO_URL, branch=DBT_PROJECT_REPO_BRANCH) >> dbt_deps
+    dbt_deps >> dbt_test >> dbt_run
+    dbt_run >> edr_monitor
 
 # DAG definition
 @dag(

@@ -1,0 +1,4 @@
+{
+    "DBT_PROJECT_REPO_BRANCH": "elementary/generate-report",
+    "DBT_PROJECT_REPO_URL": "https://github.com/Deloitte/mdp-dbt-databricks"
+}

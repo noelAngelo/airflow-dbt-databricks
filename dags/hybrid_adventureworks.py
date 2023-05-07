@@ -25,8 +25,7 @@ default_args = {
 }
 default_config = {
     'autoloader_job_id': '457857757061064',
-    'bronze_silver_job_id': '012345678',
-    'silver_to_gold_id': '012345678',
+    'dbt_job_id': 290669,
     'notebook_params': {}
 }
 dag_params = {
@@ -37,16 +36,10 @@ dag_params = {
         description="The Job ID of the Autoloader in Databricks"
     ),
 
-    "bronze_silver_job_id": Param(
-        default=default_config['bronze_silver_job_id'],
-        type="string",
+    "dbt_job_id": Param(
+        default=default_config['dbt_job_id'],
+        type="int",
         description="The Job ID of Bronze to Silver in dbt"
-    ),
-
-    "silver_to_gold_id": Param(
-        default=default_config['silver_to_gold_id'],
-        type="string",
-        description="The Job ID of Silver to Gold in dbt"
     ),
 
     "notebook_params": Param(
@@ -63,7 +56,7 @@ dag_params = {
 
 
 # Task definitions
-@task(task_id='run_autoloader')
+@task()
 def run_autoloader(**kwargs):
     ti: TaskInstance = kwargs["ti"]
     dag_run: DagRun = ti.dag_run
@@ -77,17 +70,18 @@ def run_autoloader(**kwargs):
     db_job.execute(kwargs)
 
 
-# # dbt operators
-# run_bronze_to_silver_dbt = DbtCloudRunJobOperator(
-#     task_id='run_bronze_to_silver',
-#     job_id=bronze_silver_job_id,
-#     dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
-# )
-# run_silver_to_gold_dbt = DbtCloudRunJobOperator(
-#     task_id='run_silver_to_gold',
-#     job_id=silver_to_gold_id,
-#     dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
-# )
+@task()
+def run_dbt(**kwargs):
+    ti: TaskInstance = kwargs["ti"]
+    dag_run: DagRun = ti.dag_run
+
+    # dbt operators
+    dbt_job = DbtCloudRunJobOperator(
+        task_id='run_dbt_task',
+        job_id=dag_run.conf.get("dbt_job_id", default=default_config['dbt_job_id']),
+        dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
+    )
+    dbt_job.execute(kwargs)
 
 
 # DAG definition
@@ -112,9 +106,10 @@ def hybrid_adventureworks():
 
     # Tasks
     run_autoloader_task = run_autoloader()
+    run_dbt_task = run_dbt()
 
     # Describe workflows
-    start_op >> run_autoloader_task >> end_op
+    start_op >> run_autoloader_task >> run_dbt_task >> end_op
 
 
 # Run workflow
