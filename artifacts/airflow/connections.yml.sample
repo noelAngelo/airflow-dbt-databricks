@@ -12,7 +12,7 @@ dbt_cloud_default:
   description: The personal access token used to trigger jobs in dbt Cloud
   extra: ''
   host: ''
-  login: ''
+  login: insert-dbt-account-id
   password: insert-token-details
   port: null
   schema: ''
