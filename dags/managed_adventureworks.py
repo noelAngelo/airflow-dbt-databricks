@@ -62,39 +62,10 @@ default_elementary = {
 }
 
 
-# Task definitions
-@task()
-def run_autoloader(**kwargs):
-    ti: TaskInstance = kwargs["ti"]
-    dag_run: DagRun = ti.dag_run
-
-    # Databricks operators
-    db_job = DatabricksRunNowOperator(
-        task_id='run_autoloader_task',
-        job_id=dag_run.conf.get("autoloader_job_id", default=default_config['autoloader_job_id']),
-        databricks_conn_id=DATABRICKS_CONN_ID,
-        notebook_params=dag_run.conf.get('notebook_params', default=default_config['notebook_params']))
-    db_job.execute(kwargs)
-
-
-@task()
-def run_dbt(**kwargs):
-    ti: TaskInstance = kwargs["ti"]
-    dag_run: DagRun = ti.dag_run
-
-    # dbt cloud operator
-    dbt_job = DbtCloudRunJobOperator(
-        task_id='run_dbt_task',
-        job_id=dag_run.conf.get("dbt_job_id", default=default_config['dbt_job_id']),
-        dbt_cloud_conn_id=DBT_CLOUD_CONN_ID
-    )
-    dbt_job.execute(kwargs)
-
-
 # DAG definition
 @dag(
     default_args=default_args,
-    tags=["hybrid", "adventureworks"],
+    tags=["managed", "adventureworks"],
     max_active_runs=1,
     max_active_tasks=1,
     params=dag_params,
@@ -111,19 +82,36 @@ def managed_adventureworks():
     start_op = EmptyOperator(task_id='start_op')
     end_op = EmptyOperator(task_id='end_op')
 
-    # Bash operators
+    # Bash operator
     run_edr_report_task = BashOperator(
         task_id='run_report_task',
         cwd='/opt/airflow/artifacts/elementary/mdp-dbt-databricks',
-        bash_command='edr report --file-path /opt/airflow/artifacts/reports/report.html'
+        bash_command='edr report --file-path /opt/airflow/artifacts/reports/report.html')
+
+    # dbt cloud operator
+    run_dbt = DbtCloudRunJobOperator(
+        task_id='run_dbt_task',
+        dbt_cloud_conn_id=DBT_CLOUD_CONN_ID,
+        job_id=default_config['dbt_job_id']
     )
 
-    # Tasks
-    run_autoloader_task = run_autoloader()
-    run_dbt_task = run_dbt()
+    # Task definitions
+    @task
+    def run_autoloader(**kwargs):
+        ti: TaskInstance = kwargs["ti"]
+        dag_run: DagRun = ti.dag_run
+        dag_conf = dag_run.conf
+
+        # Databricks operators
+        db_job = DatabricksRunNowOperator(
+            task_id='run_autoloader_task',
+            job_id=dag_conf.get("autoloader_job_id", default_config['autoloader_job_id']),
+            databricks_conn_id=DATABRICKS_CONN_ID,
+            notebook_params=dag_conf.get('notebook_params', default_config['notebook_params']))
+        db_job.execute(kwargs)
 
     # Describe workflows
-    start_op >> run_autoloader_task >> run_dbt_task >> run_edr_report_task >> end_op
+    start_op >> run_autoloader() >> run_dbt >> run_edr_report_task >> end_op
 
 
 # Run workflow

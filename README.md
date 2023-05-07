@@ -3,27 +3,39 @@
 This repository contains Airflow DAGs and plugins for triggering dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be used to automate your data pipeline and orchestrate your dbt and Databricks jobs.
 
 ## To-do
-
-- Set up Amazon SES and configure SMTP in Airflow
-- Trigger dbt job in dbt Cloud
 - Trigger Databricks notebook in AWS
+- Trigger dbt job in dbt Cloud
+- Send elementary data report file to S3
+- Set up Amazon SES and configure SMTP in Airflow
 - Send email
 
 ## Requirements
 To use these DAGs and plugins, you will need the following:
 
-- An Airflow instance running in the AWS Managed Workflows for Apache Airflow (MWAA) service.
-- A dbt project deployed on dbt Cloud.
-- A Databricks workspace in AWS.
-- A local copy of the [aws-mwaa-local-runner](https://github.com/aws/aws-mwaa-local-runner) repository to generate plugins
+### Databricks
+- A running SQL Warehouse
+- A job / all-purpose cluster
+- A Databricks Notebook
+- A Workflow Job
+
+### dbt
+- A dbt Job
+
+Once you have all the information above, fill in the details:
+- Create a `connections.yml` 
+  - from the `connections.yml.sample` file
+- Create a `profiles.yml` 
+  - from the `profiles.yml.sample` file
 
 
 ## Usage
 To use these DAGs and plugins, you will need to:
 
 1. Clone this repository to your local machine.
-2. Modify the DAGs and plugins to fit your specific use case. This may include updating variables, credentials, and task dependencies.
-3. Copy the modified DAGs and plugins to your Airflow instance in the MWAA service.
+2. Create artifacts in `artifacts/airflow` directory:
+    - `connections.yml`: contains Databricks and dbt connection string details 
+    - `profiles.yml`: contains Databricks details for dbt to connect to (_used by: elementary_)
+3. Clone a `dbt project` under the `artifacts/elementary` directory.
 4. Trigger the DAGs manually or configure them to run on a schedule.
 
 The DAGs included in this repository use HTTP requests to trigger dbt jobs in dbt Cloud and Databricks jobs in Databricks. These DAGs can be modified to fit your specific use case and can be extended to include additional tasks and dependencies.

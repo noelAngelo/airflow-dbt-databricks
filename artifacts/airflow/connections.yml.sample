@@ -1,0 +1,18 @@
+databricks_default:
+  conn_type: databricks
+  description: Databricks connection for triggering jobs in Databricks Cloud
+  extra: ''
+  host: insert-host-details
+  login: ''
+  password: insert-token-details
+  port: null
+  schema: ''
+dbt_cloud_default:
+  conn_type: dbt_cloud
+  description: The personal access token used to trigger jobs in dbt Cloud
+  extra: ''
+  host: ''
+  login: ''
+  password: insert-token-details
+  port: null
+  schema: ''
