@@ -83,7 +83,7 @@ it was done this way because:
   - elementary CLI is dependent on having the dbt project stored locally
 
 this poses challenges because of the following:
-- Code duplication: both repositories have a copy of the dbt project, it can lead to code duplication and maintenance overhead. This only becomes an issue if a user updates the wrong repository - makes code changes in the _mdp-airflow_ repository instead of the _mdp-dbt-databricks_ repository
+- Code duplication: both repositories have a copy of the dbt project, it can lead to code duplication and maintenance overhead. This only becomes an issue if a user updates the wrong repository - makes code changes to the dbt project in the _mdp-airflow_ repository instead of the _mdp-dbt-databricks_ repository
 - Inconsistent Results: If the dbt project is used in both repositories but evolves independently, it may lead to inconsistent results. The dbt transformations performed in the airflow DAG may not align with the transformations performed in the dbt project if they are out of sync. This can lead to data inconsistencies and incorrect analysis.
 - Dependency Management: If the airflow DAG depends on specific versions of the dbt project, managing these dependencies can become challenging. Updating the dbt project in one repository might require changes in the airflow DAG to accommodate the new version. This can introduce compatibility issues and potentially break the DAG execution.
 
