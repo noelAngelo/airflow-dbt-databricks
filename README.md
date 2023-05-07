@@ -24,8 +24,18 @@ To use these DAGs and plugins, you will need the following:
 Once you have all the information above, fill in the details:
 - Create a `connections.yml` 
   - from the `connections.yml.sample` file
+    - `databricks``.`conn_type`: databricks
+    - `databricks`.`host`: the host URL in databricks
+    - `databricks`.`password`: the Personal Access token in databricks
+    - `dbt`.`login`: the Account ID in dbt
+    - `dbt`.`password`: the Personal Access Token in dbt
 - Create a `profiles.yml` 
   - from the `profiles.yml.sample` file
+    - `elementary`.`catalog`: catalog in databricks
+    - `elementary`.`schema`: schema in databricks
+    - `elementary`.`http_path`: sql warehouse `http_path`
+    - `elementary`.`host`: the host url in databricks (without https://)
+    - `elementary`.`token`: the Personal Access Token in databricks
 
 
 ## Usage
