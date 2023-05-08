@@ -108,6 +108,7 @@ lorem ipsum
 
 ### Airflow
 ![img-airflow](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-airflow.png)
+> `run_dbt_task` was marked success in order to run downstream tasks and generate a report. the error from dbt was that some dbt tests failed which is shown in the report below.
 
 ### Databricks
 ![img-databricks](https://github.com/Deloitte/mdp-airflow/blob/feature/poc-adventureworks/artifacts/assets/img-databricks.png)
