@@ -5,6 +5,7 @@ from airflow.operators.bash import BashOperator
 from airflow.decorators import dag, task
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models.taskinstance import TaskInstance
 from airflow.models.dagrun import DagRun
 from airflow.models.param import Param
@@ -12,6 +13,7 @@ from airflow.models.param import Param
 # Define connections
 DATABRICKS_CONN_ID = 'databricks_default'
 DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
+AWS_CONN_ID = 'aws_conn_default'
 
 # Define defaults
 default_args = {
@@ -55,9 +57,9 @@ dag_params = {
     )
 }
 default_elementary = {
-    'image': 'ghcr.io/elementary-data/elementary:latest',
+    'file_path': '/opt/airflow/reports/reports.html',
     'commands': {
-        'monitor': 'edr report --file-path /opt/airflow/reports/reports.html'
+        'monitor': 'edr report'
     }
 }
 
@@ -82,12 +84,6 @@ def managed_adventureworks():
     start_op = EmptyOperator(task_id='start_op')
     end_op = EmptyOperator(task_id='end_op')
 
-    # Bash operator
-    run_edr_report_task = BashOperator(
-        task_id='run_report_task',
-        cwd='/opt/airflow/artifacts/elementary/mdp-dbt-databricks',
-        bash_command='edr report --file-path /opt/airflow/artifacts/reports/report.html')
-
     # dbt cloud operator
     run_dbt = DbtCloudRunJobOperator(
         task_id='run_dbt_task',
@@ -111,7 +107,7 @@ def managed_adventureworks():
         db_job.execute(kwargs)
 
     # Describe workflows
-    start_op >> run_autoloader() >> run_dbt >> run_edr_report_task >> end_op
+    start_op >> run_autoloader() >> run_dbt >> end_op
 
 
 # Run workflow
