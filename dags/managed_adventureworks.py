@@ -1,11 +1,10 @@
 import pendulum
 from datetime import timedelta
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.bash import BashOperator
 from airflow.decorators import dag, task
+from airflow.providers.http.operators.http import SimpleHttpOperator
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.models.taskinstance import TaskInstance
 from airflow.models.dagrun import DagRun
 from airflow.models.param import Param
@@ -14,6 +13,7 @@ from airflow.models.param import Param
 DATABRICKS_CONN_ID = 'databricks_default'
 DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
 AWS_CONN_ID = 'aws_conn_default'
+GITHUB_CONN_ID = 'github_actions_default'
 
 # Define defaults
 default_args = {
@@ -63,6 +63,11 @@ default_elementary = {
     }
 }
 
+# Define GitHub configurations
+GITHUB_OWNER = 'Deloitte'
+GITHUB_REPO = 'mdp-dbt-databricks'
+GITHUB_WORKFLOW_ID = 'run-elementary.yml'
+
 
 # DAG definition
 @dag(
@@ -91,6 +96,15 @@ def managed_adventureworks():
         job_id=default_config['dbt_job_id']
     )
 
+    # GitHub Actions operator
+    run_github_actions = SimpleHttpOperator(
+        task_id='run_elementary',
+        http_conn_id=GITHUB_CONN_ID,
+        method='POST',
+        endpoint=f'/repos/{GITHUB_OWNER}/{GITHUB_REPO}/actions/workflows/{GITHUB_WORKFLOW_ID}/dispatches',
+        trigger_rule='all_done'
+    )
+
     # Task definitions
     @task
     def run_autoloader(**kwargs):
@@ -107,7 +121,7 @@ def managed_adventureworks():
         db_job.execute(kwargs)
 
     # Describe workflows
-    start_op >> run_autoloader() >> run_dbt >> end_op
+    start_op >> run_autoloader() >> run_dbt >> run_github_actions >> end_op
 
 
 # Run workflow
