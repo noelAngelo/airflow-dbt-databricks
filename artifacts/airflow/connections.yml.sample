@@ -9,10 +9,19 @@ databricks_default:
   schema: ''
 dbt_cloud_default:
   conn_type: dbt_cloud
-  description: The personal access token used to trigger jobs in dbt Cloud
+  description: dbt Cloud connection for triggering jobs in dbt Cloud
   extra: ''
   host: ''
   login: insert-dbt-account-id
   password: insert-token-details
   port: null
   schema: ''
+github_actions_default:
+  conn_type: http
+  description: GitHub connection to triggering GitHub Actions in GitHub
+  extra: ''
+  host: https://api.github.com
+  login: ''
+  password: insert-github-personal-access-token
+  port: null
+  schema: https
