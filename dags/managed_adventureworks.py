@@ -3,7 +3,9 @@ import pendulum
 from datetime import timedelta
 from airflow.hooks.base import BaseHook
 from airflow.operators.empty import EmptyOperator
-from airflow.decorators import dag, task
+from airflow.operators.email import EmailOperator
+from airflow.operators.python import PythonOperator
+from airflow import DAG
 from airflow.datasets import Dataset
 from airflow.providers.http.operators.http import SimpleHttpOperator
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
@@ -109,90 +111,100 @@ dag_params = {
 }
 
 
-# DAG definition
-@dag(
-    default_args=default_args,
-    tags=["managed", "adventureworks"],
-    max_active_runs=1,
-    max_active_tasks=1,
-    params=dag_params,
-    schedule=None,
-    schedule_interval=None,
-)
-def managed_adventureworks():
-    """
-    ### Adventureworks Pipeline Documentation
-    Pipeline to run the jobs in elementary and Databricks for AdventureWorks
-    """
+# Task definitions
+def run_autoloader(**kwargs):
+    ti: TaskInstance = kwargs["ti"]
+    dag_run: DagRun = ti.dag_run
+    dag_conf = dag_run.conf
 
+    # Databricks operators
+    db_job = DatabricksRunNowOperator(
+        task_id='run_autoloader_task',
+        job_id=dag_conf.get("DATABRICKS__AUTOLOADER_JOB_ID", default_config['databricks']['autoloader_job_id']),
+        databricks_conn_id=DATABRICKS_CONN_ID,
+        notebook_params=dag_conf.get('DATABRICKS__NOTEBOOK_PARAMS',
+                                     default_config['databricks']['notebook_params']),
+        dag=dag
+    )
+    db_job.execute(kwargs)
+
+
+def run_dbt(**kwargs):
+    ti: TaskInstance = kwargs["ti"]
+    dag_run: DagRun = ti.dag_run
+    dag_conf = dag_run.conf
+
+    # dbt cloud operator
+    dbt_job = DbtCloudRunJobOperator(
+        task_id='run_dbt_task',
+        dbt_cloud_conn_id=DBT_CLOUD_CONN_ID,
+        job_id=dag_conf.get('DBT__JOB_ID', default_config['dbt']['job_id']),
+        dag=dag
+    )
+    dbt_job.execute(kwargs)
+
+
+def run_github_action(**kwargs):
+    ti: TaskInstance = kwargs["ti"]
+    dag_run: DagRun = ti.dag_run
+    dag_conf = dag_run.conf
+
+    # Http Connection
+    conn = BaseHook.get_connection(GITHUB_CONN_ID)
+
+    # GitHub Action Setup
+    github_owner = dag_conf.get('GITHUB__OWNER', default_config['github']['owner'])
+    github_repo = dag_conf.get('GITHUB__REPOSITORY', default_config['github']['repository'])
+    github_branch = dag_conf.get('GITHUB__BRANCH', default_config['github']['branch'])
+    workflow_id = dag_conf.get('GITHUB__WORKFLOW_ID', default_config['github']['workflow_id'])
+
+    # Trigger GitHub Action
+    gh_job = SimpleHttpOperator(
+        task_id='run_elementary',
+        http_conn_id=GITHUB_CONN_ID,
+        method='POST',
+        endpoint=f'/repos/{github_owner}/{github_repo}/actions/workflows/{workflow_id}/dispatches',
+        headers={
+            'Accept': 'application/vnd.github+json',
+            'Authorization': f'Bearer {conn.password}',
+            'X-GitHub-Api-Version': '2022-11-28'
+        },
+        trigger_rule='all_done',
+        data=json.dumps({'ref': github_branch}),
+        outlets=[Dataset(f"s3://{ELEMENTARY_S3_BUCKET}/{ELEMENTARY_REPORT_FILENAME}")],
+        dag=dag
+    )
+    gh_job.execute(kwargs)
+
+
+# DAG definition
+with DAG(
+        dag_id='managed_adventureworks',
+        default_args=default_args,
+        tags=["managed", "adventureworks"],
+        max_active_runs=1,
+        max_active_tasks=1,
+        params=dag_params,
+        schedule=None,
+        schedule_interval=None) as dag:
     # Dummy operators
     start_op = EmptyOperator(task_id='start_op')
     end_op = EmptyOperator(task_id='end_op')
 
-    # Task definitions
-    @task
-    def run_autoloader(**kwargs):
-        ti: TaskInstance = kwargs["ti"]
-        dag_run: DagRun = ti.dag_run
-        dag_conf = dag_run.conf
+    autoloader_task = PythonOperator(
+        task_id='autoloader_task',
+        python_callable=run_autoloader
+    )
 
-        # Databricks operators
-        db_job = DatabricksRunNowOperator(
-            task_id='run_autoloader_task',
-            job_id=dag_conf.get("DATABRICKS__AUTOLOADER_JOB_ID", default_config['databricks']['autoloader_job_id']),
-            databricks_conn_id=DATABRICKS_CONN_ID,
-            notebook_params=dag_conf.get('DATABRICKS__NOTEBOOK_PARAMS', default_config['databricks']['notebook_params']))
-        db_job.execute(kwargs)
+    dbt_task = PythonOperator(
+        task_id='dbt_task',
+        python_callable=run_dbt
+    )
 
-    @task
-    def run_dbt(**kwargs):
-        ti: TaskInstance = kwargs["ti"]
-        dag_run: DagRun = ti.dag_run
-        dag_conf = dag_run.conf
+    github_task = PythonOperator(
+        task_id='github_task',
+        python_callable=run_github_action,
+        trigger_rule='all_done'
+    )
 
-        # dbt cloud operator
-        dbt_job = DbtCloudRunJobOperator(
-            task_id='run_dbt_task',
-            dbt_cloud_conn_id=DBT_CLOUD_CONN_ID,
-            job_id=dag_conf.get('DBT__JOB_ID', default_config['dbt']['job_id'])
-        )
-        dbt_job.execute(kwargs)
-
-    @task
-    def run_github_action(**kwargs):
-        ti: TaskInstance = kwargs["ti"]
-        dag_run: DagRun = ti.dag_run
-        dag_conf = dag_run.conf
-
-        # Http Connection
-        conn = BaseHook.get_connection(GITHUB_CONN_ID)
-
-        # GitHub Action Setup
-        github_owner = dag_conf.get('GITHUB__OWNER', default_config['github']['owner'])
-        github_repo = dag_conf.get('GITHUB__REPOSITORY', default_config['github']['repository'])
-        github_branch = dag_conf.get('GITHUB__BRANCH', default_config['github']['branch'])
-        workflow_id = dag_conf.get('GITHUB__WORKFLOW_ID', default_config['github']['workflow_id'])
-
-        # Trigger GitHub Action
-        gh_job = SimpleHttpOperator(
-            task_id='run_elementary',
-            http_conn_id=GITHUB_CONN_ID,
-            method='POST',
-            endpoint=f'/repos/{github_owner}/{github_repo}/actions/workflows/{workflow_id}/dispatches',
-            headers={
-                'Accept': 'application/vnd.github+json',
-                'Authorization': f'Bearer {conn.password}',
-                'X-GitHub-Api-Version': '2022-11-28'
-            },
-            trigger_rule='all_done',
-            data=json.dumps({'ref': github_branch}),
-            outlets=[Dataset(f"s3://{ELEMENTARY_S3_BUCKET}/{ELEMENTARY_REPORT_FILENAME}")]
-        )
-        gh_job.execute(kwargs)
-
-    # Describe workflows
-    start_op >> run_autoloader() >> run_dbt() >> run_github_action() >> end_op
-
-
-# Run workflow
-managed_adventureworks()
+    start_op >> autoloader_task >> dbt_task >> github_task >> end_op
