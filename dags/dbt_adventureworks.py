@@ -97,17 +97,17 @@ dag_params = {
     ),
     "ELEMENTARY_WORKFLOW_JOB_ID": Param(
         default=DBT_ELEMENTARY_JOB_ID,
-        type="integer",
+        type="string",
         description="The AdventureWorks Silver Workflow in dbt"
     ),
     "DBT__SILVER_WORKFLOW_JOB_ID": Param(
         default=DBT_SILVER_JOB_ID,
-        type="integer",
+        type="string",
         description="The AdventureWorks Silver Workflow in dbt"
     ),
     "DBT__GOLD_WORKFLOW_JOB_ID": Param(
         default=DBT_GOLD_JOB_ID,
-        type="integer",
+        type="string",
         description="The AdventureWorks Gold Job in dbt"
     )
 }
@@ -172,7 +172,7 @@ def transform_aw() -> TaskGroup:
 with DAG(
         dag_id='dbt_adventureworks',
         default_args=default_args,
-        tags=['dbt', 'adventureworks', 'prod'],
+        tags=['dbt', 'adventureworks', 'test'],
         max_active_runs=1,
         max_active_tasks=1,
         params=dag_params,
