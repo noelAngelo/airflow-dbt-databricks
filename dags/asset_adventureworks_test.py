@@ -10,7 +10,6 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 from airflow.providers.databricks.operators.databricks import DatabricksRunNowOperator
 from airflow.models.param import Param
 
-
 # Define connections
 DATABRICKS_CONN_ID = 'databricks_default'
 AWS_CONN_ID = 'aws_conn_default'
@@ -20,7 +19,7 @@ GITHUB_CONN_ID = 'github_actions_default'
 GITHUB_OWNER = 'Deloitte'
 GITHUB_REPOSITORY = 'mdp-dbt-databricks'
 GITHUB_BRANCH = 'deployment/test'
-GITHUB_WORKFLOW_ID = 'run-elementary.yml'
+GITHUB_WORKFLOW_ID = 'run-elementary'
 
 # Define S3 configurations
 ELEMENTARY_S3_BUCKET = 'ddloa-asset'
@@ -43,16 +42,16 @@ default_args = {
 default_config = {
     'databricks': {
         'notebook_params': {
-            'destination_catalog': 'edp',
-            'destination_schema': 'lakehouse_bronze_aw',
-            'source_directory': 's3://ddloa-artifacts/source_data/adventureworks',
-            'target_directory': 's3://ddloa-artifacts/adventureworks/lakehouse_bronze_aw',
-            'clean_run': 'False',
-            'action': 'load'
+            "destination_catalog": "noel_dev_edp",
+            "destination_schema": "lakehouse_bronze_aw",
+            "source_directory": "s3://ddloa-artifacts/source_data/adventureworks",
+            "target_directory": "s3://ddloa-artifacts/adventureworks/noel_lakehouse_bronze_aw",
+            "clean_run": "False",
+            "action": "load"
         },
-        'bronze_workflow_job_id': '10627615967856',
-        'silver_workflow_id': '899035929538342',
-        'gold_workflow_id': '236761744252830'
+        'bronze_workflow_job_id': '59223933359434',
+        'silver_workflow_id': '519543879248133',
+        'gold_workflow_id': '110712236066382'
     },
     'elementary': {
         's3_bucket': ELEMENTARY_S3_BUCKET,
@@ -95,16 +94,15 @@ def get_config(config_key: str, default) -> str:
 
 
 with DAG(
-        dag_id='asset_adventureworks',
+        dag_id='asset_adventureworks_test',
         default_args=default_args,
-        tags=['asset', 'adventureworks', 'prod'],
+        tags=['asset', 'adventureworks', 'test'],
         max_active_runs=1,
         max_active_tasks=1,
         params=dag_params,
         schedule=None,
         schedule_interval=None
 ) as dag:
-
     bronze_workflow = DatabricksRunNowOperator(
         task_id='bronze_workflow_task',
         job_id="{{ params.DATABRICKS__BRONZE_WORKFLOW_JOB_ID }}",
@@ -131,7 +129,6 @@ with DAG(
         databricks_conn_id=DATABRICKS_CONN_ID
     )
 
-    conn = BaseHook.get_connection(GITHUB_CONN_ID)
     gh_job = SimpleHttpOperator(
         task_id='elementary_report_task',
         http_conn_id=GITHUB_CONN_ID,
@@ -139,18 +136,17 @@ with DAG(
         endpoint=f'/repos/{GITHUB_OWNER}/{GITHUB_REPOSITORY}/actions/workflows/{GITHUB_WORKFLOW_ID}/dispatches',
         headers={
             'Accept': 'application/vnd.github+json',
-            'Authorization': f'Bearer {conn.password}',
+            'Authorization': f'Bearer {BaseHook.get_connection(GITHUB_CONN_ID).password}',
             'X-GitHub-Api-Version': '2022-11-28'
         },
         trigger_rule='all_done',
         data=json.dumps({'ref': GITHUB_BRANCH}),
-        outlets=[Dataset(f"s3://{ELEMENTARY_S3_BUCKET}/{ELEMENTARY_REPORT_FILENAME}")],
-        dag=dag
+        outlets=[Dataset(f"s3://{ELEMENTARY_S3_BUCKET}/{ELEMENTARY_REPORT_FILENAME}")]
     )
 
     # Dummy operators
     start_op = EmptyOperator(task_id='start_op')
-    end_op = EmptyOperator(task_id='end_op')
+    end_op = EmptyOperator(task_id='end_op', outlets=[elementary_report])
 
     # Define orchestration workflow
     start_op >> bronze_workflow >> silver_workflow >> gold_workflow >> gh_job >> end_op
