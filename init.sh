@@ -16,6 +16,6 @@ else
 fi
 
 # Use the environment variables
-echo " - PROJ_DIR: $PROJ_DIR"
+echo " - PROJ_DIR: $AIRFLOW_PROJ_DIR"
 echo " - AIRFLOW_UID: $AIRFLOW_UID"
 echo " - _AIRFLOW_WWW_USER_USERNAME: $_AIRFLOW_WWW_USER_USERNAME"

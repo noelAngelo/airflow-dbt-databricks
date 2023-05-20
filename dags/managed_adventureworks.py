@@ -3,7 +3,6 @@ import pendulum
 from datetime import timedelta
 from airflow.hooks.base import BaseHook
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.email import EmailOperator
 from airflow.operators.python import PythonOperator
 from airflow import DAG
 from airflow.datasets import Dataset
