@@ -1,4 +1,20 @@
 {
-    "DBT_PROJECT_REPO_BRANCH": "elementary/generate-report",
-    "DBT_PROJECT_REPO_URL": "https://github.com/Deloitte/mdp-dbt-databricks"
+  "databricks_catalog": "edp_test",
+  "databricks_schema": "lakehouse_bronze_aw_test",
+  "databricks_http_path": "/sql/1.0/warehouses/e8a4932bf9b4298e",
+  "databricks_source_dir": "s3://ddloa-artifacts/source_data/adventureworks",
+  "databricks_target_dir": "s3://ddloa-artifacts/adventureworks/lakehouse_bronze_aw",
+  "databricks_bronze_workflow_id": "59223933359434",
+
+  "dbt_elementary_job_id": 306479,
+  "dbt_silver_job_id": 306421,
+  "dbt_gold_job_id": 306434,
+
+  "github_owner": "Deloitte",
+  "github_repository": "mdp-dbt-databricks",
+  "github_branch": "deployment/test",
+  "github_workflow_id": "run-elementary.yml",
+
+  "elementary_s3_bucket": "ddloa-asset",
+  "elementary_report_filename": "elementary_report.html"
 }

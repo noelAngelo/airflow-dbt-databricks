@@ -23,17 +23,23 @@ DATABRICKS_CATALOG = Variable.get('databricks_catalog', default_var='edp_test')
 DATABRICKS_SCHEMA = Variable.get('databricks_schema', default_var='lakehouse_bronze_aw')
 DATABRICKS_HTTP_PATH = Variable.get('databricks_http_path', default_var='/sql/1.0/warehouses/e8a4932bf9b4298e')
 DATABRICKS_SOURCE_DIR = Variable.get('databricks_source_dir', default_var='s3://ddloa-artifacts/source_data/adventureworks')
-DATABRICKS_TARGET_DIR = Variable.get('databricks_source_dir', default_var='s3://ddloa-artifacts/adventureworks/lakehouse_bronze_aw')
+DATABRICKS_TARGET_DIR = Variable.get('databricks_target_dir', default_var='s3://ddloa-artifacts/adventureworks/lakehouse_bronze_aw')
+DATABRICKS_BRONZE_WORKFLOW_ID = Variable.get('databricks_bronze_workflow_id', default_var='59223933359434')
+
+# Define dbt Cloud configurations
+DBT_ELEMENTARY_JOB_ID = Variable.get('dbt_elementary_job_id', default_var=306479)
+DBT_SILVER_JOB_ID = Variable.get('dbt_silver_job_id', default_var=306421)
+DBT_GOLD_JOB_ID = Variable.get('dbt_gold_job_id', default_var=306434)
 
 # Define GitHub configurations
-GITHUB_OWNER = 'Deloitte'
-GITHUB_REPOSITORY = 'mdp-dbt-databricks'
-GITHUB_BRANCH = 'deployment/test'
-GITHUB_WORKFLOW_ID = 'run-elementary.yml'
+GITHUB_OWNER = Variable.get('github_owner', default_var='Deloitte')
+GITHUB_REPOSITORY = Variable.get('github_repository', default_var='mdp-dbt-databricks')
+GITHUB_BRANCH = Variable.get('github_branch', default_var='deployment/test')
+GITHUB_WORKFLOW_ID = Variable.get('github_workflow_id', default_var='run-elementary.yml')
 
 # Define S3 configurations
-ELEMENTARY_S3_BUCKET = 'ddloa-asset'
-ELEMENTARY_REPORT_FILENAME = 'elementary_report.html'
+ELEMENTARY_S3_BUCKET = Variable.get('elementary_s3_bucket', default_var='ddloa-asset')
+ELEMENTARY_REPORT_FILENAME = Variable.get('elementary_report_filename', default_var='elementary_report.html')
 
 # Define datasets
 elementary_report = Dataset(f"s3://{ELEMENTARY_S3_BUCKET}/{ELEMENTARY_REPORT_FILENAME}")
@@ -49,81 +55,58 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
     'start_date': pendulum.datetime(2021, 1, 1, tz="UTC")
 }
-default_config = {
-    'databricks': {
-        'catalog': DATABRICKS_CATALOG,
-        'schema': DATABRICKS_SCHEMA,
-        'source_dir': DATABRICKS_SOURCE_DIR,
-        'target_dir': DATABRICKS_TARGET_DIR
-    }
-}
-default_params = {
-    'databricks': {
-        'bronze_workflow_job_id': '59223933359434',
-        'clean_run': 'False'
-    },
-    'dbt': {
-        'elementary_job_id': 306479,
-        'silver_job_id': 306421,
-        'gold_job_id': 306434
-    },
-    'elementary': {
-        's3_bucket': ELEMENTARY_S3_BUCKET,
-        'report_filename': ELEMENTARY_REPORT_FILENAME
-    }
-}
 
 # Define parameters
 dag_params = {
 
 
     "DATABRICKS__CATALOG": Param(
-        default=default_config['databricks']['catalog'],
+        default=DATABRICKS_CATALOG,
         type="string",
         description='The AdventureWorks catalog'
     ),
 
     "DATABRICKS__SCHEMA": Param(
-        default=default_config['databricks']['schema'],
+        default=DATABRICKS_SCHEMA,
         type="string",
         description='The AdventureWorks schema'
     ),
 
     "DATABRICKS__SOURCE_DIR": Param(
-        default=default_config['databricks']['source_dir'],
+        default=DATABRICKS_SOURCE_DIR,
         type="string",
         description='The AdventureWorks source directory from S3'
     ),
 
     "DATABRICKS__TARGET_DIR": Param(
-        default=default_config['databricks']['target_dir'],
+        default=DATABRICKS_TARGET_DIR,
         type="string",
         description='The AdventureWorks target directory from S3'
     ),
 
     "DATABRICKS__REBUILD_TABLES": Param(
-        default=default_params['databricks']['clean_run'],
+        default="False",
         type="string",
         description='Check if we want to rebuild the tables'
     ),
 
     "DATABRICKS__BRONZE_WORKFLOW_JOB_ID": Param(
-        default=default_params['databricks']['bronze_workflow_job_id'],
+        default=DATABRICKS_BRONZE_WORKFLOW_ID,
         type="string",
         description="The AdventureWorks Bronze Workflow in Databricks"
     ),
     "ELEMENTARY_WORKFLOW_JOB_ID": Param(
-        default=default_params['dbt']['elementary_job_id'],
+        default=DBT_ELEMENTARY_JOB_ID,
         type="integer",
         description="The AdventureWorks Silver Workflow in dbt"
     ),
     "DBT__SILVER_WORKFLOW_JOB_ID": Param(
-        default=default_params['dbt']['silver_job_id'],
+        default=DBT_SILVER_JOB_ID,
         type="integer",
         description="The AdventureWorks Silver Workflow in dbt"
     ),
     "DBT__GOLD_WORKFLOW_JOB_ID": Param(
-        default=default_params['dbt']['gold_job_id'],
+        default=DBT_GOLD_JOB_ID,
         type="integer",
         description="The AdventureWorks Gold Job in dbt"
     )
