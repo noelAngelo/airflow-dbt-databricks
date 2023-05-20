@@ -1,5 +1,6 @@
 apache-airflow-providers-databricks
 apache-airflow-providers-dbt-cloud
+acryl-datahub-airflow-plugin
 loguru
 pendulum
 pandas
