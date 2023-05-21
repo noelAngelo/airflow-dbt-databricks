@@ -15,7 +15,6 @@ from airflow.models.param import Param
 # Define connections
 DATABRICKS_CONN_ID = 'databricks_default'
 DBT_CLOUD_CONN_ID = 'dbt_cloud_default'
-AWS_CONN_ID = 'aws_conn_default'
 GITHUB_CONN_ID = 'github_actions_default'
 
 # Define Databricks configurations
